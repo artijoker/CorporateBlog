@@ -1,6 +1,7 @@
 package com.example.blog.domain.services;
 
 import com.example.blog.domain.entities.Account;
+import com.example.blog.domain.entities.Role;
 import com.example.blog.domain.exceptions.DuplicateEmailException;
 import com.example.blog.domain.exceptions.DuplicateLoginException;
 import com.example.blog.domain.exceptions.NotFoundRoleException;
@@ -8,9 +9,12 @@ import com.example.blog.domain.repositories.IAccountRepository;
 import com.example.blog.domain.repositories.IRoleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
+@Service
 public class RegistrationService {
 
     private final IAccountRepository accountRepository;
@@ -26,36 +30,18 @@ public class RegistrationService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public void RegisterAccount(String email, String login, String password) throws NotFoundRoleException, DuplicateEmailException, DuplicateLoginException {
-        var role = roleRepository.findRoleByName("user");
-        if (role.isEmpty())
-            throw new NotFoundRoleException();
-
-        if (accountRepository.findAccountByEmail(email).isPresent())
-            throw new DuplicateEmailException();
-
-        if (accountRepository.findAccountByLogin(login).isPresent())
-            throw new DuplicateLoginException();
-
-        var account = new Account();
-        account.setEmail(email);
-        account.setLogin(login);
-        account.setPasswordHash(passwordEncoder.encode(password));
-        account.setIsBanned(false);
-        account.setIsDeleted(false);
-        account.setRegistered(LocalDate.now());
-        account.setRole(role.get());
-
-        accountRepository.save(account);
-        //return token
+    public void RegisterUserAccount(String email, String login, String password)
+            throws DuplicateEmailException, DuplicateLoginException {
+        Register(email, login, password, roleRepository.getRoleByName("user"));
     }
 
     public void AddAccount(String email, String login, String password, int roleId)
-            throws Exception {
-        var role = roleRepository.findById(roleId);
+            throws DuplicateEmailException, DuplicateLoginException  {
+        Register(email, login, password, roleRepository.getRoleById(roleId));
+    }
 
-        if (role.isEmpty())
-            throw new NotFoundRoleException();
+    public void Register(String email, String login, String password, Role role)
+            throws DuplicateEmailException, DuplicateLoginException {
 
         if (accountRepository.findAccountByEmail(email).isPresent())
             throw new DuplicateEmailException();
@@ -67,11 +53,12 @@ public class RegistrationService {
         account.setEmail(email);
         account.setLogin(login);
         account.setPasswordHash(passwordEncoder.encode(password));
-        account.setRole(role.get());
         account.setIsBanned(false);
         account.setIsDeleted(false);
-        account.setRegistered(LocalDate.now());
+        account.setRegistered(LocalDateTime.now());
+        account.setRole(role);
 
         accountRepository.save(account);
+        //return token
     }
 }

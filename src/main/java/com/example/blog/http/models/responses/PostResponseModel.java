@@ -1,8 +1,8 @@
 package com.example.blog.http.models.responses;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
-public class PostModel {
+public class PostResponseModel {
     private int id;
     private int accountId;
     private int categoryId;
@@ -11,7 +11,7 @@ public class PostModel {
     private String title;
     private String anons;
     private String fullText;
-    private LocalDate lastChange;
+    private LocalDateTime lastChange;
 
     private String accountLogin;
     private String categoryName;
@@ -72,11 +72,11 @@ public class PostModel {
         this.fullText = fullText;
     }
 
-    public LocalDate getLastChange() {
+    public LocalDateTime getLastChange() {
         return lastChange;
     }
 
-    public void setLastChange(LocalDate lastChange) {
+    public void setLastChange(LocalDateTime lastChange) {
         this.lastChange = lastChange;
     }
 

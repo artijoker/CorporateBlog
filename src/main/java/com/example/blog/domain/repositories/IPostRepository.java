@@ -25,5 +25,6 @@ public interface IPostRepository extends CrudRepository<Post, Integer> {
     List<Post> getPostsByCategoryAndStatus(Category category,PostStatus status);
 
 
-
+    int countPostByCategoryIdAndStatusId(Integer categoryId, Integer statusId);
+    int countPostByAccountIdAndStatusId( Integer accountId, Integer statusId);
 }

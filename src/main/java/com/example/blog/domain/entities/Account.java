@@ -2,6 +2,7 @@ package com.example.blog.domain.entities;
 
 import javax.persistence.*;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,29 +11,29 @@ import java.util.List;
 public class Account {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "Id")
+    @Column(name = "id")
     private Integer id;
 
-    @Column(name = "Login")
+    @Column(name = "login")
     private String login;
 
-    @Column(name = "PasswordHash")
+    @Column(name = "password_hash")
     private String passwordHash;
 
-    @Column(name = "Email")
+    @Column(name = "email")
     private String email;
 
-    @Column(name = "Registered")
-    private LocalDate registered;
-    @Column(name = "IsBanned")
+    @Column(name = "registered")
+    private LocalDateTime registered;
+    @Column(name = "is_banned")
     private Boolean isBanned;
 
-    @Column(name = "IsDeleted")
+    @Column(name = "is_deleted")
     private Boolean isDeleted;
 
 
     @ManyToOne
-    @JoinColumn(name = "RoleId", referencedColumnName = "id")
+    @JoinColumn(name = "role_id", referencedColumnName = "id")
     private Role role;
 
     @OneToMany(mappedBy = "account")
@@ -79,11 +80,11 @@ public class Account {
         this.email = email;
     }
 
-    public LocalDate getRegistered() {
+    public  LocalDateTime getRegistered() {
         return registered;
     }
 
-    public void setRegistered(LocalDate registered) {
+    public void setRegistered( LocalDateTime registered) {
         this.registered = registered;
     }
 

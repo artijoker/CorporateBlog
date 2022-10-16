@@ -2,6 +2,7 @@ package com.example.blog.domain.entities;
 
 import javax.persistence.*;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -9,35 +10,35 @@ import java.util.List;
 public class Post {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "Id")
+    @Column(name = "id")
     private Integer id;
 
-    @Column(name = "Title")
+    @Column(name = "title")
     private String title;
 
-    @Column(name = "Anons")
+    @Column(name = "anons")
     private String anons;
 
-    @Column(name = "FullText")
+    @Column(name = "full_text")
     private String fullText;
 
 
-    @Column(name = "IsAllowCommenting")
+    @Column(name = "is_allow_commenting")
     private Boolean isAllowCommenting;
 
-    @Column(name = "LastChange")
-    private LocalDate lastChange;
+    @Column(name = "last_change")
+    private LocalDateTime lastChange;
 
     @ManyToOne
-    @JoinColumn(name = "AccountId", referencedColumnName = "id")
+    @JoinColumn(name = "account_id", referencedColumnName = "id")
     private Account account;
 
     @ManyToOne
-    @JoinColumn(name = "CategoryId", referencedColumnName = "id")
+    @JoinColumn(name = "category_id", referencedColumnName = "id")
     private Category category;
 
     @ManyToOne
-    @JoinColumn(name = "StatusId", referencedColumnName = "id")
+    @JoinColumn(name = "status_id", referencedColumnName = "id")
     private PostStatus status;
 
     @OneToMany(mappedBy = "post")
@@ -83,11 +84,11 @@ public class Post {
         this.isAllowCommenting = isAllowCommenting;
     }
 
-    public LocalDate getLastChange() {
+    public  LocalDateTime getLastChange() {
         return lastChange;
     }
 
-    public void setLastChange(LocalDate lastChange) {
+    public void setLastChange( LocalDateTime lastChange) {
         this.lastChange = lastChange;
     }
 

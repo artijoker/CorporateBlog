@@ -7,17 +7,17 @@ import javax.persistence.*;
 public class JwtToken {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "Id")
+    @Column(name = "id")
     private Integer id;
 
-    @Column(name = "Token")
+    @Column(name = "token")
     private String token;
 
-    @Column(name = "IsBlocked")
+    @Column(name = "is_blocked")
     private Boolean isBlocked;
 
     @ManyToOne
-    @JoinColumn(name = "AccountId", referencedColumnName = "id")
+    @JoinColumn(name = "account_id", referencedColumnName = "id")
     private Account account;
 
     public Integer getId() {

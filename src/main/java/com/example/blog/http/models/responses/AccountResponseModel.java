@@ -1,7 +1,8 @@
 package com.example.blog.http.models.responses;
-import java.time.LocalDate;
+import java.math.BigInteger;
+import java.time.LocalDateTime;
 
-public class AccountModel {
+public class AccountResponseModel {
     private int id;
     private int roleId;
     private String login;
@@ -9,8 +10,8 @@ public class AccountModel {
     private String email;
     private Boolean isBanned;
     private Boolean isDeleted;
-    private LocalDate registered;
-    private int quantityPosts;
+    private LocalDateTime registered;
+    private BigInteger quantityPosts;
     private String roleName;
 
     public int getId() {
@@ -61,19 +62,19 @@ public class AccountModel {
         isDeleted = deleted;
     }
 
-    public LocalDate getRegistered() {
+    public LocalDateTime getRegistered() {
         return registered;
     }
 
-    public void setRegistered(LocalDate registered) {
+    public void setRegistered(LocalDateTime registered) {
         this.registered = registered;
     }
 
-    public int getQuantityPosts() {
+    public BigInteger getQuantityPosts() {
         return quantityPosts;
     }
 
-    public void setQuantityPosts(int quantityPosts) {
+    public void setQuantityPosts(BigInteger quantityPosts) {
         this.quantityPosts = quantityPosts;
     }
 

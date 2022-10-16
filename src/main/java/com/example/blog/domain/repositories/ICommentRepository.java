@@ -8,5 +8,7 @@ import org.springframework.data.repository.CrudRepository;
 import java.util.List;
 
 public interface ICommentRepository extends CrudRepository<Comment, Integer> {
-    List<Comment> findCommentByAccountId(int accountId);
+    List<Comment> findCommentsByAccountId(int accountId);
+    List<Comment> findCommentsByPostId(int postId);
+    List<Comment> findCommentsByPostIdAndAccountId(int postId, int accountId);
 }

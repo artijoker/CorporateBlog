@@ -7,18 +7,18 @@ import javax.persistence.*;
 public class Comment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "Id")
+    @Column(name = "id")
     private Integer id;
 
-    @Column(name = "Text")
+    @Column(name = "text")
     private String text;
 
     @ManyToOne
-    @JoinColumn(name = "AccountId", referencedColumnName = "id")
+    @JoinColumn(name = "account_id", referencedColumnName = "id")
     private Account account;
 
     @ManyToOne
-    @JoinColumn(name = "PostId", referencedColumnName = "id")
+    @JoinColumn(name = "post_id", referencedColumnName = "id")
     private Post post;
 
     public Integer getId() {

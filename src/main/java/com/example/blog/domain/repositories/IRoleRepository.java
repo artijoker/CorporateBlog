@@ -8,5 +8,7 @@ import java.util.Optional;
 public interface IRoleRepository  extends CrudRepository<Role, Integer> {
 
     Optional<Role> findRoleByName(String name);
-    Optional<Role> findRoleById(Integer id);
+
+    Role getRoleByName(String name);
+    Role getRoleById(Integer id);
 }

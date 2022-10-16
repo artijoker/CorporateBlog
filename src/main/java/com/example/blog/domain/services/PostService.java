@@ -8,11 +8,11 @@ import com.example.blog.domain.repositories.ICategoryRepository;
 import com.example.blog.domain.repositories.IPostRepository;
 import com.example.blog.domain.entities.Post;
 import com.example.blog.domain.repositories.IPostStatusRepository;
+import com.example.blog.http.models.responses.PostResponseModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -33,31 +33,64 @@ public class PostService {
         this.accountRepository = accountRepository;
     }
 
-    public List<Post> getPublishedPosts() {
-        return new ArrayList<>(postRepository.getPostsByStatusId(3));
+    public PostResponseModel getPostById(int postId) throws NotFoundPostException {
+        var post = postRepository.findById(postId);
+        if (post.isEmpty())
+            throw new NotFoundPostException();
+
+        return postToPostModel(post.get());
     }
 
-    public List<Post> getPendingPosts() {
-        return new ArrayList<>(postRepository.getPostsByStatusId(2));
+    public List<PostResponseModel> getPublishedPosts() {
+        return postRepository.getPostsByStatusId(3)
+                .stream()
+                .map(this::postToPostModel)
+                .toList();
+    }
+
+    public List<PostResponseModel> getPendingPosts() {
+        return postRepository.getPostsByStatusId(2)
+                .stream()
+                .map(this::postToPostModel)
+                .toList();
     }
 
 
-    public List<Post> getDraftPostsByAccountId(int accountId){
-        return new ArrayList<>(postRepository.getPostsByAccountIdAndStatusId(accountId, 1));
+    public List<PostResponseModel> getDraftPostsByAccountId(int accountId) {
+        return postRepository.getPostsByAccountIdAndStatusId(accountId, 1)
+                .stream()
+                .map(this::postToPostModel)
+                .toList();
     }
-    public List<Post> getPendingPostsByAccountId(int accountId){
-        return new ArrayList<>(postRepository.getPostsByAccountIdAndStatusId(accountId, 2));
-    }
-    public List<Post> getPublishedPostsByAccountId(int accountId) {
-        return new ArrayList<>(postRepository.getPostsByAccountIdAndStatusId(accountId, 3));
 
+    public List<PostResponseModel> getPendingPostsByAccountId(int accountId) {
+        return postRepository.getPostsByAccountIdAndStatusId(accountId, 2)
+                .stream()
+                .map(this::postToPostModel)
+                .toList();
     }
-    public  List<Post> getRejectedPostsByAccountId(int accountId){
-        return new ArrayList<>(postRepository.getPostsByAccountIdAndStatusId(accountId, 4));
+
+    public List<PostResponseModel> getPublishedPostsByAccountId(int accountId) {
+        return postRepository.getPostsByAccountIdAndStatusId(accountId, 3)
+                .stream()
+                .map(this::postToPostModel)
+                .toList();
     }
-    public List<Post> getPublishedPostsByCategoryId(int categoryId) {
-        return new ArrayList<>(postRepository.getPostsByCategoryIdAndStatusId(categoryId, 3));
+
+    public List<PostResponseModel> getRejectedPostsByAccountId(int accountId) {
+        return postRepository.getPostsByAccountIdAndStatusId(accountId, 4)
+                .stream()
+                .map(this::postToPostModel)
+                .toList();
     }
+
+    public List<PostResponseModel> getPublishedPostsByCategoryId(int categoryId) {
+        return postRepository.getPostsByCategoryIdAndStatusId(categoryId, 3)
+                .stream()
+                .map(this::postToPostModel)
+                .toList();
+    }
+
     public void addPost(int accountId,
                         String title,
                         String anons,
@@ -117,15 +150,6 @@ public class PostService {
         addPost(accountId, title, anons, fullText, isAllowCommenting, categoryId, 3);
     }
 
-    public Post getById(int id) throws NotFoundPostException {
-        var post = postRepository.findById(id);
-        if (post.isEmpty())
-            throw new NotFoundPostException();
-
-        return post.get();
-    }
-
-
 
 
 
@@ -138,7 +162,7 @@ public class PostService {
             int categoryId) throws NotFoundPostException, NotFoundCategoryException {
         var optionalPost = postRepository.findById(postId);
         if (optionalPost.isEmpty())
-            throw new  NotFoundPostException();
+            throw new NotFoundPostException();
         var post = optionalPost.get();
 
         var category = categoryRepository.findById(categoryId);
@@ -146,8 +170,7 @@ public class PostService {
             throw new NotFoundCategoryException();
 
         if (post.getTitle() != title || post.getAnons() != anons ||
-                post.getFullText() != fullText || post.getCategory().getId() != categoryId)
-        {
+                post.getFullText() != fullText || post.getCategory().getId() != categoryId) {
             post.setTitle(title);
             post.setAnons(anons);
             post.setFullText(fullText);
@@ -156,7 +179,7 @@ public class PostService {
 
             post.setStatus(postStatusRepository.getPostStatusById(1));
 
-            post.setLastChange(LocalDate.now());
+            post.setLastChange(LocalDateTime.now());
 
             postRepository.save(post);
         }
@@ -172,7 +195,7 @@ public class PostService {
             int categoryId) throws NotFoundPostException, NotFoundCategoryException {
         var optionalPost = postRepository.findById(postId);
         if (optionalPost.isEmpty())
-            throw new  NotFoundPostException();
+            throw new NotFoundPostException();
         var post = optionalPost.get();
 
         var category = categoryRepository.findById(categoryId);
@@ -180,15 +203,14 @@ public class PostService {
             throw new NotFoundCategoryException();
 
         if (post.getTitle() != title || post.getAnons() != anons ||
-                post.getFullText() != fullText || post.getCategory().getId() != categoryId)
-        {
+                post.getFullText() != fullText || post.getCategory().getId() != categoryId) {
             post.setTitle(title);
             post.setAnons(anons);
             post.setFullText(fullText);
             post.setIsAllowCommenting(isAllowCommenting);
             post.setCategory(category.get());
 
-            post.setLastChange(LocalDate.now());
+            post.setLastChange(LocalDateTime.now());
 
             postRepository.save(post);
         }
@@ -196,14 +218,13 @@ public class PostService {
 
     public void removePost(int postId) {
         postRepository.deleteById(postId);
-
     }
 
     public void sendPostModeration(int postId) throws NotFoundPostException {
         updatePostStatus(postId, 2);
     }
 
-    public void  sendPostToDraft(int postId) throws NotFoundPostException {
+    public void sendPostToDraft(int postId) throws NotFoundPostException {
         updatePostStatus(postId, 1);
     }
 
@@ -214,14 +235,31 @@ public class PostService {
     public void rejectPost(int postId) throws NotFoundPostException {
         updatePostStatus(postId, 4);
     }
+
     public void updatePostStatus(int postId, int statusId) throws NotFoundPostException {
         var optionalPost = postRepository.findById(postId);
         if (optionalPost.isEmpty())
-            throw new  NotFoundPostException();
+            throw new NotFoundPostException();
         var post = optionalPost.get();
         post.setStatus(postStatusRepository.getPostStatusById(statusId));
-        post.setLastChange(LocalDate.now());
+        post.setLastChange(LocalDateTime.now());
         postRepository.save(post);
     }
 
+
+    private PostResponseModel postToPostModel(Post post) {
+        var model = new PostResponseModel();
+        model.setId(post.getId());
+        model.setAccountId(post.getAccount().getId());
+        model.setCategoryId(post.getCategory().getId());
+        model.setStatusId(post.getStatus().getId());
+
+        model.setTitle(post.getTitle());
+        model.setAnons(post.getAnons());
+        model.setFullText(post.getFullText());
+        model.setLastChange(post.getLastChange());
+        model.setAccountLogin(post.getAccount().getLogin());
+        model.setCategoryName(post.getCategory().getName());
+        return model;
+    }
 }
