@@ -4,7 +4,9 @@ import com.example.blog.domain.exceptions.*;
 import com.example.blog.domain.services.AccountService;
 import com.example.blog.domain.services.AuthorizationService;
 import com.example.blog.domain.services.RegistrationService;
-import com.example.blog.http.models.requests.AccountRequestModel;
+import com.example.blog.http.models.requests.UpdateAccountRequestModel;
+import com.example.blog.http.models.requests.LogInRequestModel;
+import com.example.blog.http.models.requests.RegistrationRequestModel;
 import com.example.blog.http.models.responses.AccountResponseModel;
 import com.example.blog.http.models.responses.LogInResponseModel;
 import com.example.blog.http.models.responses.ResponseModel;
@@ -42,10 +44,10 @@ public class AccountController {
     }
 
     @PostMapping("/registration")
-    public LogInResponseModel RegisterAccount(@ModelAttribute AccountRequestModel model) {
+    public LogInResponseModel registerAccount(@ModelAttribute RegistrationRequestModel model) {
         var response = new LogInResponseModel();
         try {
-            registrationService.RegisterUserAccount(model.getEmail(), model.getLogin(), model.getPassword());
+            registrationService.RegisterAccount(model.getEmail(), model.getLogin(), model.getPassword());
             response.setSucceeded(true);
         } catch (DuplicateEmailException ex) {
             response.setSucceeded(false);
@@ -59,7 +61,7 @@ public class AccountController {
     }
 
     @PostMapping("/login")
-    public LogInResponseModel LogIn(@ModelAttribute AccountRequestModel model) {
+    public LogInResponseModel logIn(@ModelAttribute LogInRequestModel model) {
         var response = new LogInResponseModel();
         try {
             response.setSucceeded(true);
@@ -84,6 +86,38 @@ public class AccountController {
         response.setSucceeded(true);
         response.setResult(accountService.getAccountByIdAndCountPublishedPosts(accountId));
 
+        return response;
+    }
+
+    @PostMapping("/update-account")
+    public ResponseModel<?> updateAccount(@ModelAttribute UpdateAccountRequestModel model){
+        var response = new ResponseModel<>();
+        try {
+            accountService.updateAccount(model.getAccountId(), model.getEmail(), model.getLogin(), model.getNewPassword());
+            response.setSucceeded(true);
+        } catch (DuplicateEmailException ex) {
+            response.setSucceeded(false);
+            response.setMessage("Пользователь с таким email или уже существует");
+
+        } catch (DuplicateLoginException ex) {
+            response.setSucceeded(false);
+            response.setMessage("Пользователь с таким логином уже существует");
+        } catch (NotFoundAccountException e) {
+            response.setSucceeded(false);
+            response.setMessage("Учетная запись не найдена");
+        }
+        return response;
+    }
+    @PostMapping("/delete-account")
+    public ResponseModel<?> removeAccount(@RequestParam int accountId){
+        var response = new ResponseModel<>();
+        try {
+            accountService.removeAccount(accountId);
+            response.setSucceeded(true);
+        } catch (DefaultAdminException e) {
+            response.setSucceeded(false);
+            response.setMessage("Нельзя удалить учетную запись супер администратора");
+        }
         return response;
     }
 }

@@ -47,7 +47,7 @@ public class AccountService {
         return accounts;
     }
 
-    public List<AccountResponseModel>  findAllBlockedAccounts() {
+    public List<AccountResponseModel> findAllBlockedAccounts() {
         var accounts = new ArrayList<AccountResponseModel>();
         accountRepository.findAccountsByIsBannedTrue().forEach(account -> {
             var model = new AccountResponseModel();
@@ -131,8 +131,8 @@ public class AccountService {
         return accountModels;
     }
 
-    public void UserUpdateAccount(int accountId, String email, String login, String newPassword)
-            throws Exception {
+    public void updateAccount(int accountId, String email, String login, String newPassword)
+            throws NotFoundAccountException, DuplicateEmailException, DuplicateLoginException {
         boolean isModified = false;
         var accountOptional = accountRepository.findById(accountId);
         if (accountOptional.isEmpty())
@@ -166,8 +166,15 @@ public class AccountService {
         }
     }
 
-    public void AdminUpdateAccount(int accountId, String email, String login, String newPassword, int roleId)
-            throws Exception {
+    public void adminUpdateAccount(int accountId,
+                                   String email,
+                                   String login,
+                                   String newPassword,
+                                   int roleId)
+            throws NotFoundAccountException,
+            DuplicateEmailException,
+            DuplicateLoginException,
+            DefaultAdminException {
         boolean isModified = false;
 
         var accountOptional = accountRepository.findById(accountId);
@@ -198,11 +205,11 @@ public class AccountService {
         }
 
         if (account.getRole().getId() != roleId) {
-            var roleOptional = roleRepository.findById(roleId);
-            if (roleOptional.isEmpty())
-                throw new NotFoundRoleException();
+            if (accountId == 1)
+                throw new DefaultAdminException();
 
-            account.setRole(roleOptional.get());
+            var role = roleRepository.getRoleById(roleId);
+            account.setRole(role);
             isModified = true;
         }
 
@@ -216,7 +223,8 @@ public class AccountService {
             throw new DefaultAdminException();
         accountRepository.deleteById(accountId);
     }
-    public void BanAccount(int accountId) throws DefaultAdminException, NotFoundAccountException {
+
+    public void banAccount(int accountId) throws DefaultAdminException, NotFoundAccountException {
         if (accountId == 1)
             throw new DefaultAdminException();
 
@@ -231,9 +239,7 @@ public class AccountService {
         accountRepository.save(account);
     }
 
-    public void UnlockAccount(int accountId) throws NotFoundAccountException, DefaultAdminException {
-        if (accountId == 1)
-            throw new DefaultAdminException();
+    public void unlockAccount(int accountId) throws NotFoundAccountException{
 
         var accountOptional = accountRepository.findById(accountId);
         if (accountOptional.isEmpty())

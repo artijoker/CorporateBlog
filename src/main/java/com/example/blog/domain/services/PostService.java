@@ -1,5 +1,6 @@
 package com.example.blog.domain.services;
 
+import com.example.blog.domain.entities.PostStatus;
 import com.example.blog.domain.exceptions.NotFoundAccountException;
 import com.example.blog.domain.exceptions.NotFoundCategoryException;
 import com.example.blog.domain.exceptions.NotFoundPostException;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class PostService {
@@ -95,7 +97,6 @@ public class PostService {
                         String title,
                         String anons,
                         String fullText,
-                        boolean isAllowCommenting,
                         int categoryId,
                         int statusId) throws NotFoundAccountException, NotFoundCategoryException {
 
@@ -112,7 +113,6 @@ public class PostService {
         post.setTitle(title);
         post.setAnons(anons);
         post.setFullText(fullText);
-        post.setIsAllowCommenting(isAllowCommenting);
         post.setAccount(account.get());
         post.setCategory(category.get());
         post.setStatus(postStatusRepository.getPostStatusById(statusId));
@@ -124,65 +124,46 @@ public class PostService {
                              String title,
                              String anons,
                              String fullText,
-                             boolean isAllowCommenting,
                              int categoryId) throws NotFoundAccountException, NotFoundCategoryException {
 
-        addPost(accountId, title, anons, fullText, isAllowCommenting, categoryId, 1);
+        addPost(accountId, title, anons, fullText, categoryId, 1);
     }
 
     public void addPostAndSendToModeration(int accountId,
                                            String title,
                                            String anons,
                                            String fullText,
-                                           boolean isAllowCommenting,
                                            int categoryId) throws NotFoundAccountException, NotFoundCategoryException {
 
-        addPost(accountId, title, anons, fullText, isAllowCommenting, categoryId, 2);
+        addPost(accountId, title, anons, fullText, categoryId, 2);
     }
 
     public void addPostAndPublished(int accountId,
                                     String title,
                                     String anons,
                                     String fullText,
-                                    boolean isAllowCommenting,
                                     int categoryId) throws NotFoundAccountException, NotFoundCategoryException {
 
-        addPost(accountId, title, anons, fullText, isAllowCommenting, categoryId, 3);
+        addPost(accountId, title, anons, fullText, categoryId, 3);
     }
 
 
-
-
-    public void userUpdatePost(
+    public void updatePost(
             int postId,
             String title,
             String anons,
             String fullText,
-            boolean isAllowCommenting,
             int categoryId) throws NotFoundPostException, NotFoundCategoryException {
-        var optionalPost = postRepository.findById(postId);
-        if (optionalPost.isEmpty())
-            throw new NotFoundPostException();
-        var post = optionalPost.get();
 
-        var category = categoryRepository.findById(categoryId);
-        if (category.isEmpty())
-            throw new NotFoundCategoryException();
+        postRepository.save(
+                editPost(postId,
+                        title,
+                        anons,
+                        fullText,
+                        categoryId,
+                        Optional.of(postStatusRepository.getPostStatusById(1))
+                ));
 
-        if (post.getTitle() != title || post.getAnons() != anons ||
-                post.getFullText() != fullText || post.getCategory().getId() != categoryId) {
-            post.setTitle(title);
-            post.setAnons(anons);
-            post.setFullText(fullText);
-            post.setIsAllowCommenting(isAllowCommenting);
-            post.setCategory(category.get());
-
-            post.setStatus(postStatusRepository.getPostStatusById(1));
-
-            post.setLastChange(LocalDateTime.now());
-
-            postRepository.save(post);
-        }
     }
 
 
@@ -191,30 +172,19 @@ public class PostService {
             String title,
             String anons,
             String fullText,
-            boolean isAllowCommenting,
             int categoryId) throws NotFoundPostException, NotFoundCategoryException {
-        var optionalPost = postRepository.findById(postId);
-        if (optionalPost.isEmpty())
-            throw new NotFoundPostException();
-        var post = optionalPost.get();
+        postRepository.save(
+                editPost(postId,
+                        title,
+                        anons,
+                        fullText,
+                        categoryId,
+                        Optional.empty()
+                ));
 
-        var category = categoryRepository.findById(categoryId);
-        if (category.isEmpty())
-            throw new NotFoundCategoryException();
-
-        if (post.getTitle() != title || post.getAnons() != anons ||
-                post.getFullText() != fullText || post.getCategory().getId() != categoryId) {
-            post.setTitle(title);
-            post.setAnons(anons);
-            post.setFullText(fullText);
-            post.setIsAllowCommenting(isAllowCommenting);
-            post.setCategory(category.get());
-
-            post.setLastChange(LocalDateTime.now());
-
-            postRepository.save(post);
-        }
     }
+
+
 
     public void removePost(int postId) {
         postRepository.deleteById(postId);
@@ -246,6 +216,33 @@ public class PostService {
         postRepository.save(post);
     }
 
+    private Post editPost(
+            int postId,
+            String title,
+            String anons,
+            String fullText,
+            int categoryId,
+            Optional<PostStatus> status) throws NotFoundPostException, NotFoundCategoryException {
+        var optionalPost = postRepository.findById(postId);
+        if (optionalPost.isEmpty())
+            throw new NotFoundPostException();
+        var post = optionalPost.get();
+
+        var category = categoryRepository.findById(categoryId);
+        if (category.isEmpty())
+            throw new NotFoundCategoryException();
+
+        if (post.getTitle() != title || post.getAnons() != anons ||
+                post.getFullText() != fullText || post.getCategory().getId() != categoryId) {
+            post.setTitle(title);
+            post.setAnons(anons);
+            post.setFullText(fullText);
+            post.setCategory(category.get());
+            post.setLastChange(LocalDateTime.now());
+        }
+        status.ifPresent(post::setStatus);
+        return post;
+    }
 
     private PostResponseModel postToPostModel(Post post) {
         var model = new PostResponseModel();

@@ -23,8 +23,8 @@ public class Post {
     private String fullText;
 
 
-    @Column(name = "is_allow_commenting")
-    private Boolean isAllowCommenting;
+//    @Column(name = "is_allow_commenting")
+//    private Boolean isAllowCommenting;
 
     @Column(name = "last_change")
     private LocalDateTime lastChange;
@@ -76,13 +76,13 @@ public class Post {
         this.fullText = fullText;
     }
 
-    public Boolean getIsAllowCommenting() {
-        return isAllowCommenting;
-    }
-
-    public void setIsAllowCommenting(Boolean isAllowCommenting) {
-        this.isAllowCommenting = isAllowCommenting;
-    }
+//    public Boolean getIsAllowCommenting() {
+//        return isAllowCommenting;
+//    }
+//
+//    public void setIsAllowCommenting(Boolean isAllowCommenting) {
+//        this.isAllowCommenting = isAllowCommenting;
+//    }
 
     public  LocalDateTime getLastChange() {
         return lastChange;

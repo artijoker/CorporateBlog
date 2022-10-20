@@ -1,6 +1,10 @@
 package com.example.blog.server.controllers;
 
+import com.example.blog.domain.exceptions.NotFoundAccountException;
+import com.example.blog.domain.exceptions.NotFoundCategoryException;
 import com.example.blog.domain.exceptions.NotFoundPostException;
+import com.example.blog.http.models.requests.AddingPostRequestsModel;
+import com.example.blog.http.models.requests.UpdatePostRequestModel;
 import com.example.blog.http.models.responses.PostResponseModel;
 import com.example.blog.http.models.responses.ResponseModel;
 import com.example.blog.domain.services.PostService;
@@ -20,7 +24,7 @@ public class PostController {
     }
 
     @GetMapping("/get-posts")
-    public ResponseModel<List<PostResponseModel>> posts() {
+    public ResponseModel<List<PostResponseModel>> getPosts() {
         var response = new ResponseModel<List<PostResponseModel>>();
         response.setSucceeded(true);
         response.setResult( _postService.getPublishedPosts());
@@ -28,26 +32,52 @@ public class PostController {
         return response;
     }
 
-    @GetMapping("/get-post/{id}")
-    public ResponseModel<PostResponseModel> postDetails(@PathVariable(value = "id") int id) {
+    @PostMapping("/get-post")
+    public ResponseModel<PostResponseModel> getPostById(@RequestParam int postId) {
+        var response = new ResponseModel<PostResponseModel>();
         try {
-            var post = _postService.getPostById(id);
-
-            var response = new ResponseModel<PostResponseModel>();
+            var post = _postService.getPostById(postId);
             response.setSucceeded(true);
             response.setResult(post);
-            return response;
-
         } catch (NotFoundPostException ex) {
-            var response = new ResponseModel<PostResponseModel>();
             response.setSucceeded(false);
             response.setMessage("Статья не найдена");
-            return response;
         }
+        return response;
     }
 
-    @GetMapping("/get-published-posts-by-account")
-    public ResponseModel<List<PostResponseModel>> getPublishedPostsByAccount(@RequestParam int accountId) {
+    @PostMapping("/get-posts-by-category")
+    public ResponseModel<List<PostResponseModel>> getPublishedPostsByCategoryId(@RequestParam int categoryId) {
+
+        var response = new ResponseModel<List<PostResponseModel>>();
+        response.setSucceeded(true);
+        response.setResult(_postService.getPublishedPostsByCategoryId(categoryId));
+
+        return response;
+    }
+
+    @PostMapping("/get-draft-posts-by-account")
+    public ResponseModel<List<PostResponseModel>> getDraftPostsByAccountId(@RequestParam int accountId) {
+
+        var response = new ResponseModel<List<PostResponseModel>>();
+        response.setSucceeded(true);
+        response.setResult(_postService.getDraftPostsByAccountId(accountId));
+
+        return response;
+    }
+
+    @PostMapping("/get-pending-posts-by-account")
+    public ResponseModel<List<PostResponseModel>> getPendingPostsByAccountId(@RequestParam int accountId) {
+
+        var response = new ResponseModel<List<PostResponseModel>>();
+        response.setSucceeded(true);
+        response.setResult(_postService.getPendingPostsByAccountId(accountId));
+
+        return response;
+    }
+
+    @PostMapping("/get-published-posts-by-account")
+    public ResponseModel<List<PostResponseModel>> getPublishedPostsByAccountId(@RequestParam int accountId) {
 
         var response = new ResponseModel<List<PostResponseModel>>();
         response.setSucceeded(true);
@@ -56,12 +86,110 @@ public class PostController {
         return response;
     }
 
-    @GetMapping("/get-published-posts-by-category")
-    public ResponseModel<List<PostResponseModel>> publishedPostsByCategory(@RequestParam int categoryId) {
+    @PostMapping("/get-rejected-posts-by-account")
+    public ResponseModel<List<PostResponseModel>> getRejectedPostsByAccountId(@RequestParam int accountId) {
 
         var response = new ResponseModel<List<PostResponseModel>>();
         response.setSucceeded(true);
-        response.setResult(_postService.getPublishedPostsByCategoryId(categoryId));
+        response.setResult(_postService.getRejectedPostsByAccountId(accountId));
+
+        return response;
+    }
+
+    @PostMapping("/add-post")
+    public ResponseModel<?> addDraftPost(@ModelAttribute AddingPostRequestsModel model){
+        var response = new ResponseModel<>();
+        try{
+            _postService.addDraftPost(model.getAccountId(),
+                    model.getTitle(),
+                    model.getAnons(),
+                    model.getFullText(),
+                    model.getCategoryId()
+            );
+            response.setSucceeded(true);
+        } catch (NotFoundAccountException e) {
+            response.setSucceeded(false);
+            response.setMessage("Учетная запись не найдена");
+        } catch (NotFoundCategoryException e) {
+            response.setSucceeded(false);
+            response.setMessage("Категория не найдена");
+        }
+        return response;
+    }
+
+    @PostMapping("/add-post-and-send-to-moderation")
+    public ResponseModel<?> addPostAndSendToModeration(@ModelAttribute AddingPostRequestsModel model){
+        var response = new ResponseModel<>();
+        try{
+            _postService.addPostAndSendToModeration(model.getAccountId(),
+                    model.getTitle(),
+                    model.getAnons(),
+                    model.getFullText(),
+                    model.getCategoryId()
+            );
+            response.setSucceeded(true);
+        } catch (NotFoundAccountException e) {
+            response.setSucceeded(false);
+            response.setMessage("Учетная запись не найдена");
+        } catch (NotFoundCategoryException e) {
+            response.setSucceeded(false);
+            response.setMessage("Категория не найдена");
+        }
+        return response;
+    }
+
+    @PostMapping("/send-post-moderation")
+    public ResponseModel<?> sendPostModeration(@RequestParam int postId){
+        var response = new ResponseModel<>();
+        try{
+            _postService.sendPostModeration(postId);
+            response.setSucceeded(true);
+        } catch (NotFoundPostException e) {
+            response.setSucceeded(false);
+            response.setMessage("Статья не найдена");
+        }
+        return response;
+    }
+
+    @PostMapping("/send-post-to-draft")
+    public ResponseModel<?> sendPostToDraft(@RequestParam int postId){
+        var response = new ResponseModel<>();
+        try{
+            _postService.sendPostToDraft(postId);
+            response.setSucceeded(true);
+        } catch (NotFoundPostException e) {
+            response.setSucceeded(false);
+            response.setMessage("Статья не найдена");
+        }
+        return response;
+    }
+
+    @PostMapping("/update-post")
+    public ResponseModel<?> updatePost(@ModelAttribute UpdatePostRequestModel model){
+        var response = new ResponseModel<>();
+        try{
+            _postService.updatePost(model.getPostId(),
+                    model.getTitle(),
+                    model.getAnons(),
+                    model.getFullText(),
+                    model.getCategoryId()
+            );
+            response.setSucceeded(true);
+        } catch (NotFoundCategoryException e) {
+            response.setSucceeded(false);
+            response.setMessage("Категория не найдена");
+        } catch (NotFoundPostException e) {
+            response.setSucceeded(false);
+            response.setMessage("Статья не найдена");
+        }
+        return response;
+    }
+
+    @PostMapping("/delete-post")
+    public ResponseModel<?> removePost(@RequestParam int postId){
+        _postService.removePost(postId);
+        var response = new ResponseModel<>();
+        response.setSucceeded(true);
 
         return response;
     }

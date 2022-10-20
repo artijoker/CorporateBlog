@@ -1,17 +1,9 @@
 package com.example.blog.http.models.requests;
 
-public class AccountRequestModel {
-    private String email;
+public class LogInRequestModel {
+
     private String login;
     private String password;
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
 
     public String getLogin() {
         return login;
